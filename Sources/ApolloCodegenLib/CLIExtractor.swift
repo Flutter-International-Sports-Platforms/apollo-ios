@@ -25,7 +25,7 @@ struct CLIExtractor {
     }
   }
   
-  static let expectedSHASUM = "496b4de6a4a1f5a1c4a093c8d2378054ebf0dc19361a7dad847f82feeccad2be"
+  static let expectedSHASUM = "cb73089deb2a720a7d2f5a39ad449e1cfbdc22771130cd6e2a405aaa887c343e"
   
   /// Checks to see if the CLI has already been extracted and is the correct version, and extracts or re-extracts as necessary
   ///
@@ -135,7 +135,7 @@ struct CLIExtractor {
   /// - Parameter expected: The expected SHASUM. Defaults to the real expected SHASUM. This parameter exists mostly for testing.
   static func validateZipFileSHASUM(at zipFileURL: URL, expected: String = CLIExtractor.expectedSHASUM) throws {
     let shasum = try FileManager.default.apollo.shasum(at: zipFileURL)
-    print("SHASUM of downloaded file: \(shasum)")
+    CodegenLogger.log("SHASUM of downloaded file: \(shasum)")
     guard shasum == expected else {
       throw CLIExtractorError.zipFileHasInvalidSHASUM(expectedSHASUM: expected, gotSHASUM: shasum)
     }

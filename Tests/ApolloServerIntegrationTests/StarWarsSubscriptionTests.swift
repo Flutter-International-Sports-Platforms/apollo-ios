@@ -22,7 +22,8 @@ class StarWarsSubscriptionTests: XCTestCase {
 
     webSocketTransport = WebSocketTransport(
       websocket: WebSocket(
-        request: URLRequest(url: TestServerURL.starWarsWebSocket.url)
+        request: URLRequest(url: TestServerURL.starWarsWebSocket.url),
+        protocol: .graphql_ws
       ),
       store: ApolloStore()
     )
@@ -334,9 +335,9 @@ class StarWarsSubscriptionTests: XCTestCase {
     // dispatched with a barrier flag to make sure
     // this is performed after subscription calls
     concurrentQueue.sync(flags: .barrier) {
-      // dispatched on the processing queue to make sure
+      // dispatched on the processing queue with barrier flag to make sure
       // this is performed after subscribers are processed
-      self.webSocketTransport.websocket.callbackQueue.async {
+      self.webSocketTransport.processingQueue.async(flags: .barrier) {
         _ = self.client.perform(mutation: CreateReviewForEpisodeMutation(episode: .empire, review: ReviewInput(stars: 5, commentary: "The greatest movie ever!")))
       }
     }
@@ -410,7 +411,8 @@ class StarWarsSubscriptionTests: XCTestCase {
   func testConcurrentConnectAndCloseConnection() {
     let webSocketTransport = WebSocketTransport(
       websocket: MockWebSocket(
-        request: URLRequest(url: TestServerURL.starWarsWebSocket.url)
+        request: URLRequest(url: TestServerURL.starWarsWebSocket.url),
+        protocol: .graphql_ws
       ),
       store: ApolloStore()
     )

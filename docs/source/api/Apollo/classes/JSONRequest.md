@@ -39,6 +39,12 @@ public let useGETForPersistedQueryRetry: Bool
 public var isPersistedQueryRetry = false
 ```
 
+### `body`
+
+```swift
+public var body: GraphQLMap
+```
+
 ### `serializationFormat`
 
 ```swift

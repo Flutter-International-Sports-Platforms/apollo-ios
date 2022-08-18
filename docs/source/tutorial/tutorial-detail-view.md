@@ -13,7 +13,7 @@ However, remember that one of the advantages of GraphQL is that you can query fo
 
 This is especially true when you have a *much* larger query for your detail view than for your list view. Passing the identifier and then fetching based on that is considered a best practice. Even though the amount of data in this case doesn't differ greatly, you'll build out a query to help fetch details based on the ID so you'll know how to do it in the future. 
 
-Create a new empty file and name it `LaunchDetails.graphql`. In this file, you'll add the details you want to display in the detail view. First, you'll want to go back to [your Sandbox](https://studio.apollographql.com/sandbox/explorer?endpoint=https%3A%2F%2Fapollo-fullstack-tutorial.herokuapp.com) and make sure that your query works!
+Create a new empty file and name it `LaunchDetails.graphql`. In this file, you'll add the details you want to display in the detail view. First, you'll want to go back to [your Sandbox](https://studio.apollographql.com/sandbox/explorer?endpoint=https%3A%2F%2Fapollo-fullstack-tutorial.herokuapp.com%2Fgraphql) and make sure that your query works!
 
 In the Explorer tab, start by clicking the "New Tab" button in the middle operations section: 
 
@@ -96,7 +96,7 @@ query LaunchDetails($launchId: ID!) {
 At the bottom of the Operations section, update the Variables section to pass in an ID for a launch. In this case, it needs to be a string that contains a number:
 
 ```json:title=(Sandbox%20Explorer)
-{ "id": "25" }
+{ "launchId": "25" }
 ```
 
 This tells Sandbox Explorer to fill in the value of the `$launchId` variable with the value `"25"` when it runs the query. Press the big play button, and you should get some results back for the launch with ID 25: 
@@ -107,13 +107,13 @@ Now that you've confirmed it worked, copy the query (either by selecting all the
 
 Now that you know what you're planning to ask for, it's time to set up the UI for the detail screen. Go to `DetailViewController.swift`. First, add a place to hang on to the result of the query. Add the following property to the top of the class: 
 
-```swift:title=DetailViewController.swift
+```swift title="DetailViewController.swift"
 private var launch: LaunchDetailsQuery.Data.Launch?
 ```
 
 Next, update the `viewDidLoad` function to clear out anything from the storyboard before attempting to configure the view:
 
-```swift:title=DetailViewController.swift
+```swift title="DetailViewController.swift"
 override func viewDidLoad() {
   super.viewDidLoad()
 
@@ -126,7 +126,7 @@ override func viewDidLoad() {
 
 Delete the existing contents of `configureView()`. In their place, start by adding a check that we have something to display, and a place to display it:
 
-```swift:title=DetailViewController.swift
+```swift title="DetailViewController.swift"
 guard
   self.missionNameLabel != nil,
   let launch = self.launch else {
@@ -138,7 +138,7 @@ Next, it's time to display all the information you've gotten from your GraphQL s
 
 Add the following code below the `guard` statement you just added:
    
-```swift:title=DetailViewController.swift
+```swift title="DetailViewController.swift"
 self.missionNameLabel.text = launch.mission?.name
 self.title = launch.mission?.name
 
@@ -176,7 +176,7 @@ if launch.isBooked {
 
 Then, find the `loadLaunchDetails()`  method. Replace the `TODO` with the following, which loads the details using the `LaunchDetailsQuery` you created earlier:
 
-```swift:title=DetailViewController.swift
+```swift title="DetailViewController.swift"
 private func loadLaunchDetails() {
   guard
     let launchID = self.launchID,
@@ -213,7 +213,7 @@ private func loadLaunchDetails() {
 
 Finally, update the `didSet` for `launchID` to load the launch details if we don't already have them: 
 
-```swift:title=DetailViewController.swift
+```swift title="DetailViewController.swift"
 var launchID: GraphQLID? {
   didSet {
     self.loadLaunchDetails()
@@ -223,7 +223,7 @@ var launchID: GraphQLID? {
 
 and add a `didSet` on the `launch` property to load the UI once the launch is actually loaded. 
 
-```swift:title=DetailViewController.swift
+```swift title="DetailViewController.swift"
 private var launch: LaunchDetailsQuery.Data.Launch? {
   didSet {
     self.configureView()

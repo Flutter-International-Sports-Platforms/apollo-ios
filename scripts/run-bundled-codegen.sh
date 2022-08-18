@@ -11,7 +11,7 @@ SCRIPT_DIR="$(dirname "$0")"
 
 # Get the SHASUM of the tarball
 ZIP_FILE="${SCRIPT_DIR}/apollo.tar.gz"
-ZIP_FILE_DOWNLOAD_URL="https://install.apollographql.com/legacy-cli/darwin/2.33.6"
+ZIP_FILE_DOWNLOAD_URL="https://install.apollographql.com/legacy-cli/darwin/2.33.9"
 SHASUM_FILE="${SCRIPT_DIR}/apollo/.shasum"
 APOLLO_DIR="${SCRIPT_DIR}"/apollo
 IS_RETRY="false"
@@ -58,7 +58,7 @@ extract_cli() {
 
 validate_codegen_and_extract_if_needed() {
   # Make sure the SHASUM matches the release for this version
-  EXPECTED_SHASUM="496b4de6a4a1f5a1c4a093c8d2378054ebf0dc19361a7dad847f82feeccad2be"
+  EXPECTED_SHASUM="cb73089deb2a720a7d2f5a39ad449e1cfbdc22771130cd6e2a405aaa887c343e"
   update_shasum
 
   if [[ ${SHASUM} = ${EXPECTED_SHASUM}* ]]; then
@@ -80,7 +80,7 @@ validate_codegen_and_extract_if_needed() {
     # The file exists, let's see if it's the same SHASUM
     FILE_CONTENTS="$(cat "${SHASUM_FILE}")"
     if [[ ${FILE_CONTENTS} = ${EXPECTED_SHASUM}* ]]; then
-      echo "Current verson of CLI is already extracted!"
+      echo "Current version of CLI is already extracted!"
     else
       echo "Extracting updated version of the Apollo CLI. This may take a minute..."
       remove_existing_apollo
@@ -99,7 +99,7 @@ download_apollo_cli_if_needed
 # Make sure we're using an up-to-date and valid version of the Apollo CLI
 validate_codegen_and_extract_if_needed
 
-# Add the binary directory to the beginning of PATH so included binary verson of node is used.
+# Add the binary directory to the beginning of PATH so included binary version of node is used.
 PATH="${SCRIPT_DIR}/apollo/bin:${PATH}"
 
 # Use the bundled executable of the Apollo CLI to generate code

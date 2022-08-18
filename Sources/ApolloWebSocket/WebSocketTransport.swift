@@ -55,7 +55,7 @@ public class WebSocketTransport {
 
   private var subscribers = [String: (Result<JSONObject, Error>) -> Void]()
   private var subscriptions : [String: String] = [:]
-  private let processingQueue = DispatchQueue(label: "com.apollographql.WebSocketTransport")
+  let processingQueue = DispatchQueue(label: "com.apollographql.WebSocketTransport")
 
   private let sendOperationIdentifiers: Bool
   private let reconnectionInterval: TimeInterval
@@ -145,6 +145,7 @@ public class WebSocketTransport {
 
       switch messageType {
       case .data,
+           .next,
            .error:
         if let id = parseHandler.id, let responseHandler = subscribers[id] {
           if let payload = parseHandler.payload {
@@ -180,11 +181,19 @@ public class WebSocketTransport {
         writeQueue()
 
       case .connectionKeepAlive,
-           .startAck:
+           .startAck,
+           .pong:
         writeQueue()
+
+      case .ping:
+        if let str = OperationMessage(type: .pong).rawMessage {
+          write(str)
+          writeQueue()
+        }
 
       case .connectionInit,
            .connectionTerminate,
+           .subscribe,
            .start,
            .stop,
            .connectionError:
@@ -270,7 +279,15 @@ public class WebSocketTransport {
                                               sendQueryDocument: true,
                                               autoPersistQuery: false)
     let identifier = operationMessageIdCreator.requestId()
-    guard let message = OperationMessage(payload: body, id: identifier).rawMessage else {
+
+    let messageType: OperationMessage.Types
+    switch websocket.request.wsProtocol {
+    case .graphql_ws: messageType = .start
+    case .graphql_transport_ws: messageType = .subscribe
+    default: return nil
+    }
+
+    guard let message = OperationMessage(payload: body, id: identifier, type: messageType).rawMessage else {
       return nil
     }
 
@@ -287,7 +304,13 @@ public class WebSocketTransport {
   }
 
   public func unsubscribe(_ subscriptionId: String) {
-    let str = OperationMessage(id: subscriptionId, type: .stop).rawMessage
+    let messageType: OperationMessage.Types
+    switch websocket.request.wsProtocol {
+    case .graphql_transport_ws: messageType = .complete
+    default: messageType = .stop
+    }
+
+    let str = OperationMessage(id: subscriptionId, type: messageType).rawMessage
 
     processingQueue.async {
       if let str = str {
@@ -341,6 +364,20 @@ public class WebSocketTransport {
   public func resumeWebSocketConnection(autoReconnect: Bool = true) {
     self.reconnect.mutate { $0 = autoReconnect }
     self.websocket.connect()
+  }
+}
+
+extension URLRequest {
+  fileprivate var wsProtocol: WebSocket.WSProtocol? {
+    guard let header = value(forHTTPHeaderField: WebSocket.Constants.headerWSProtocolName) else {
+      return nil
+    }
+
+    switch header {
+    case WebSocket.WSProtocol.graphql_transport_ws.description: return .graphql_transport_ws
+    case WebSocket.WSProtocol.graphql_ws.description: return .graphql_ws
+    default: return nil
+    }
   }
 }
 
